@@ -8,7 +8,7 @@
 
 ```
 Phase    : 1 — MVP Festival
-Étape    : DISCUSS ✅  PLAN ✅ → EXECUTE (prochaine)
+Étape    : DISCUSS ✅  PLAN ✅  EXECUTE ✅ → VERIFY (prochaine)
 Branche  : claude/greenfield-drinking-tracker-rwzoeo
 Dernier  : 2026-06-11
 ```
