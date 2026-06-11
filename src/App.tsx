@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { HashRouter, Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useMembersStore } from './stores/membersStore'
 import HomeScreen from './screens/HomeScreen'
 import DrinkLogScreen from './screens/DrinkLogScreen'
@@ -56,7 +56,7 @@ function BottomNav() {
 
 export default function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <HashRouter>
       <Onboarding />
       <div className="pb-safe">
         <Routes>
@@ -68,6 +68,6 @@ export default function App() {
         </Routes>
       </div>
       <BottomNav />
-    </BrowserRouter>
+    </HashRouter>
   )
 }
