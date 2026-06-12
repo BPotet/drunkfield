@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useMembersStore, Member } from '../stores/membersStore'
+import { useSessionStore } from '../stores/sessionStore'
 
 const EMOJIS = ['🐶','🐱','🦊','🐺','🐻','🦁','🐯','🐸','🐧','🦉',
                  '🦋','🦄','🐉','👻','💀','🤖','👽','🎃','🎅','🧑‍🎤']
@@ -19,9 +20,28 @@ export default function MembersScreen() {
   const updateMember = useMembersStore((s) => s.updateMember)
   const removeMember = useMembersStore((s) => s.removeMember)
 
+  const sessionCode = useSessionStore((s) => s.sessionCode)
+  const joinSession = useSessionStore((s) => s.joinSession)
+
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [joinCode, setJoinCode] = useState('')
+  const [joinLoading, setJoinLoading] = useState(false)
+  const [joinError, setJoinError] = useState<string | null>(null)
+
+  async function handleJoin() {
+    if (!joinCode.trim()) return
+    setJoinLoading(true)
+    setJoinError(null)
+    try {
+      await joinSession(joinCode.trim())
+    } catch {
+      setJoinError('Code invalide ou session introuvable.')
+    } finally {
+      setJoinLoading(false)
+    }
+  }
 
   function startEdit(m: Member) {
     setEditingId(m.id)
@@ -102,6 +122,32 @@ export default function MembersScreen() {
           </div>
         ))}
       </div>
+
+      {/* Join session — visible only when no members yet and no active session */}
+      {members.length === 0 && !sessionCode && (
+        <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 mb-6">
+          <h2 className="font-semibold mb-3">🔗 Rejoindre un groupe</h2>
+          <p className="text-sm text-zinc-400 mb-3">Tu as un code de session ? Entre-le pour rejoindre le groupe.</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              placeholder="Code (ex: ABC123)"
+              maxLength={6}
+              className="flex-1 px-3 py-2 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 font-mono text-sm focus:outline-none focus:border-green-500"
+            />
+            <button
+              onClick={handleJoin}
+              disabled={joinLoading || joinCode.trim().length < 1}
+              className="px-4 py-2 rounded-xl bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white font-semibold text-sm"
+            >
+              {joinLoading ? '…' : 'Rejoindre'}
+            </button>
+          </div>
+          {joinError && <p className="text-sm text-red-400 mt-2">{joinError}</p>}
+        </div>
+      )}
 
       {/* Add/Edit form */}
       <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-700">
