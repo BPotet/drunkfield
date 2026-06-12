@@ -25,9 +25,10 @@ export const useSessionStore = create<SessionState>((set) => ({
     set({ sessionCode: code, isHost: true, syncActive: false })
 
     const { pushLocalDataToFirebase, subscribeToSession } = await import('../lib/sync')
-    await pushLocalDataToFirebase(code)
     _unsubscribe = subscribeToSession(code)
     set({ syncActive: true })
+    // fire-and-forget: push existing local data to Firebase
+    pushLocalDataToFirebase(code).catch(console.error)
 
     return code
   },
@@ -38,8 +39,8 @@ export const useSessionStore = create<SessionState>((set) => ({
     await dbSet('session:isHost', false)
     set({ sessionCode: normalized, isHost: false, syncActive: false })
 
-    const { pullFirebaseDataToLocal, subscribeToSession } = await import('../lib/sync')
-    await pullFirebaseDataToLocal(normalized)
+    const { subscribeToSession } = await import('../lib/sync')
+    // subscription fires onValue immediately on connect — no need to pull separately
     _unsubscribe = subscribeToSession(normalized)
     set({ syncActive: true })
   },

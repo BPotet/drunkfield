@@ -93,6 +93,26 @@ Ce projet suit la boucle **Discuss → Plan → Execute → Verify → Ship** de
 
 ---
 
+## Behavioral Guidelines
+
+### 1. Think Before Coding
+
+Before implementing: state assumptions explicitly, surface tradeoffs, ask if anything is unclear. Don't pick silently between interpretations.
+
+### 2. Simplicity First
+
+Minimum code that solves the problem. No speculative features, no abstractions for single-use code, no error handling for impossible scenarios. If it could be 50 lines, don't write 200.
+
+### 3. Surgical Changes
+
+Touch only what the task requires. Don't improve adjacent code. Match existing style. If your changes create unused imports/variables, remove them — don't touch pre-existing dead code unless asked.
+
+### 4. Goal-Driven Execution
+
+For multi-step tasks, state a brief plan with verifiable success criteria before starting. Loop until verified.
+
+---
+
 ## Conventions
 
 ### Git
