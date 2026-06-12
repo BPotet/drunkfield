@@ -35,6 +35,14 @@ export const useMembersStore = create<MembersState>((set, get) => ({
     const member: Member = { ...data, id: uuidv4(), createdAt: Date.now() }
     await dbSet(`members:${member.id}`, member)
     set((s) => ({ members: [...s.members, member] }))
+
+    const { useSessionStore } = await import('./sessionStore')
+    const { sessionCode, syncActive } = useSessionStore.getState()
+    if (syncActive && sessionCode) {
+      const { isSyncingFromRemote, syncMemberToFirebase } = await import('../lib/sync')
+      if (!isSyncingFromRemote()) await syncMemberToFirebase(sessionCode, member)
+    }
+
     return member
   },
 
@@ -44,11 +52,25 @@ export const useMembersStore = create<MembersState>((set, get) => ({
     const updated = { ...existing, ...data }
     await dbSet(`members:${id}`, updated)
     set((s) => ({ members: s.members.map((m) => (m.id === id ? updated : m)) }))
+
+    const { useSessionStore } = await import('./sessionStore')
+    const { sessionCode, syncActive } = useSessionStore.getState()
+    if (syncActive && sessionCode) {
+      const { isSyncingFromRemote, syncMemberToFirebase } = await import('../lib/sync')
+      if (!isSyncingFromRemote()) await syncMemberToFirebase(sessionCode, updated)
+    }
   },
 
   removeMember: async (id) => {
     await dbDel(`members:${id}`)
     set((s) => ({ members: s.members.filter((m) => m.id !== id) }))
+
+    const { useSessionStore } = await import('./sessionStore')
+    const { sessionCode, syncActive } = useSessionStore.getState()
+    if (syncActive && sessionCode) {
+      const { isSyncingFromRemote, deleteMemberFromFirebase } = await import('../lib/sync')
+      if (!isSyncingFromRemote()) await deleteMemberFromFirebase(sessionCode, id)
+    }
   },
 }))
 

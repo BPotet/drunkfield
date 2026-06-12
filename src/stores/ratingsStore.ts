@@ -23,6 +23,14 @@ export const useRatingsStore = create<RatingsState>((set) => ({
     const rating: DrunkRating = { id: uuidv4(), memberId, score, timestamp: Date.now() }
     await dbSet(`ratings:${rating.id}`, rating)
     set((s) => ({ ratings: [...s.ratings, rating] }))
+
+    const { useSessionStore } = await import('./sessionStore')
+    const { sessionCode, syncActive } = useSessionStore.getState()
+    if (syncActive && sessionCode) {
+      const { isSyncingFromRemote, syncRatingToFirebase } = await import('../lib/sync')
+      if (!isSyncingFromRemote()) await syncRatingToFirebase(sessionCode, rating)
+    }
+
     return rating
   },
 }))

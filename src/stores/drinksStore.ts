@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import { dbSet, dbDel, dbGetAll } from '../lib/db'
 
-
 export interface Drink {
   id: string
   memberId: string
@@ -27,12 +26,27 @@ export const useDrinksStore = create<DrinksState>((set) => ({
     const drink: Drink = { ...data, id: uuidv4(), timestamp: Date.now() }
     await dbSet(`drinks:${drink.id}`, drink)
     set((s) => ({ drinks: [...s.drinks, drink] }))
+
+    const { useSessionStore } = await import('./sessionStore')
+    const { sessionCode, syncActive } = useSessionStore.getState()
+    if (syncActive && sessionCode) {
+      const { isSyncingFromRemote, syncDrinkToFirebase } = await import('../lib/sync')
+      if (!isSyncingFromRemote()) await syncDrinkToFirebase(sessionCode, drink)
+    }
+
     return drink
   },
 
   removeDrink: async (id) => {
     await dbDel(`drinks:${id}`)
     set((s) => ({ drinks: s.drinks.filter((d) => d.id !== id) }))
+
+    const { useSessionStore } = await import('./sessionStore')
+    const { sessionCode, syncActive } = useSessionStore.getState()
+    if (syncActive && sessionCode) {
+      const { isSyncingFromRemote, deleteDrinkFromFirebase } = await import('../lib/sync')
+      if (!isSyncingFromRemote()) await deleteDrinkFromFirebase(sessionCode, id)
+    }
   },
 }))
 
